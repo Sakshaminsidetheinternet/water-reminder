@@ -1,0 +1,54 @@
+#!/bin/bash
+
+interval=${1:-30}
+goal=${2:-8}
+
+logdir="$HOME/.water_logs"
+mkdir -p "$logdir"
+
+today=$(date +%f)
+logfile="$logdir/$today.log"
+
+
+sound="/usr/share/sounds/freedesktop/stereo/complete.oga"
+
+if [["$1" == "--status"]]; then
+	if[ -f "$logfile"]; then
+		count=$(wc -l < "$logfile")
+	else
+		count=0
+	fi
+	remaining=$((goal-count))
+	echo "💧 Hydration Status"
+	echo "Drank today: $count glasses"
+        echo "Goal: $goal"
+	echo "Remaining: $remaining"	
+	exit 0
+fi
+
+if [ -f "logfile"]: then
+	count=$(wc -l< "$logfile")
+else
+	count=0
+fi
+
+
+while true; do
+    ((count++))
+echo "$(date '+%H:%M:%S') Glass $count" >> "$logfile"
+    notify-send \
+        -u normal \
+        -t 5000 \
+        "💧 Hydration Reminder" \
+        "Glass $count / $goal - Drink water and stay focused!"
+
+    paplay "$sound"
+
+    if [ "$count" -ge "$goal" ]; then
+        notify-send "✅ Hydration Goal Completed" "You reached $goal glasses today!"
+        break
+    fi
+
+    sleep "$((interval * 60))"
+done
+
